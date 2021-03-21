@@ -35,13 +35,13 @@ const tutorList = new TutorList();
 | Helpers
 |--------------------------------------------------
 */
-// function login(uid) {
-//   console.log(`Log in user with uid ${uid}`);
-// }
+function login(uid) {
+  logger.info(`RRE log in, uid ${uid}`);
+}
 
-// function logout(uid) {
-//   console.log(`Log out user with uid ${uid}`);
-// }
+function logout(uid) {
+  logger.info(`RRE log out, uid ${uid}`);
+}
 
 /**
 |--------------------------------------------------
@@ -110,13 +110,14 @@ io.on('connection', (socket) => {
   const { uid, name, avatar } = socket.handshake.query;
 
   socket.on('disconnect', (reason) => {
+    logout(uid);
     tutorList.removeTutor(uid);
     pubsub.unsubscribe(uid);
     logger.info(`Socket disconnected, reason: ${reason}, uid: ${uid}, name: ${name}, avatar: ${avatar}`);
   });
 
+  login(uid);
   tutorList.addTutor(uid, name, avatar);
-
   pubsub.subscribe(uid);
 
   pubsub.onBroadcastMessage('message', (data) => {
