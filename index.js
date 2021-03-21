@@ -88,11 +88,13 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   const { uid, name, avatar } = socket.handshake.query;
-  tutorList.addTutor(uid, name, avatar);
 
   socket.on('disconnect', (reason) => {
     tutorList.removeTutor(uid);
+    pubsub.unsubscribe(uid);
   });
+
+  tutorList.addTutor(uid, name, avatar);
 
   pubsub.subscribe(uid);
 
@@ -105,10 +107,8 @@ io.on('connection', (socket) => {
   });
 
   pubsub.onMessage(uid, 'disconnect', (data) => {
-    if (tutorList.hasTutor(uid) && socket.emit('message', data)) {
-      tutorList.removeTutor(uid);
-      pubsub.unsubscribe(uid);
-      socket.disconnect(true);
+    if (socket.emit('message', data)) {
+      socket.disconnect();
     }
   });
 });
