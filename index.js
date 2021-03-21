@@ -3,6 +3,7 @@ const express = require('express');
 const socketIo = require('socket.io');
 const winston = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
+const morgan = require('morgan');
 const config = require('./config');
 const PubSub = require('./PubSub');
 const TutorList = require('./TutorList');
@@ -47,6 +48,8 @@ const tutorList = new TutorList();
 | REST app
 |--------------------------------------------------
 */
+rest.use(morgan(':req[x-forwarded-for] - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'));
+
 rest.use(express.json());
 
 rest.get('/', (req, res) => {
