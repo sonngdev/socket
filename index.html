@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <form>
+    <input type="text" name="uid" placeholder="uid">
+    <input type="text" name="name" placeholder="name">
+    <input type="text" name="avatar" placeholder="avatar">
+    <button type="submit">Connect</button>
+  </form>
+  <div id="status" style="font-weight: bold; margin-top: 16px;"></div>
+
+  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('form');
+      const status = document.getElementById('status');
+      let socket;
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const { uid, name, avatar } = form;
+        socket = io('http://localhost:8000', {
+          query: {
+            uid: uid.value,
+            name: name.value,
+            avatar: avatar.value,
+          }
+        });
+
+        socket.on('connect', () => {
+          status.innerText = 'Socket connected';
+          status.style.color = 'green';
+        });
+        socket.on('disconnect',() => {
+          status.innerText = 'Socket disconnected';
+          status.style.color = 'red';
+        })
+      });
+    });
+  </script>
+</body>
+</html>
