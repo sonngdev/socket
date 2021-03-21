@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const config = require('./config');
 const PubSub = require('./PubSub');
 const TutorList = require('./TutorList');
+const RRE = require('./RRE');
 
 const conf = config(process.env.NODE_ENV);
 const rest = express();
@@ -29,19 +30,7 @@ const logger = winston.createLogger({
 });
 const pubsub = new PubSub();
 const tutorList = new TutorList();
-
-/**
-|--------------------------------------------------
-| Helpers
-|--------------------------------------------------
-*/
-function login(uid) {
-  logger.info(`RRE log in, uid ${uid}`);
-}
-
-function logout(uid) {
-  logger.info(`RRE log out, uid ${uid}`);
-}
+const rre = new RRE(process.env.NODE_ENV);
 
 /**
 |--------------------------------------------------
@@ -110,13 +99,13 @@ io.on('connection', (socket) => {
   const { uid, name, avatar } = socket.handshake.query;
 
   socket.on('disconnect', (reason) => {
-    logout(uid);
+    rre.logout(uid);
     tutorList.removeTutor(uid);
     pubsub.unsubscribe(uid);
     logger.info(`Socket disconnected, reason: ${reason}, uid: ${uid}, name: ${name}, avatar: ${avatar}`);
   });
 
-  login(uid);
+  rre.login(uid);
   tutorList.addTutor(uid, name, avatar);
   pubsub.subscribe(uid);
 
