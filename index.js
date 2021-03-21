@@ -137,9 +137,26 @@ pubsub.subscribeBroadcast();
 |--------------------------------------------------
 */
 restServer.listen(conf.rest.port, () => {
-  logger.info(`REST app listening on port ${conf.rest.port}`);
+  logger.info(`Rest app listening on port ${conf.rest.port}`);
 });
 
 socketServer.listen(conf.socket.port, () => {
   logger.info(`Socket app listening on port ${conf.socket.port}`);
+});
+
+process.on('SIGINT', () => {
+  logger.info('Server interruption signal. Force logging out...');
+
+  const cleanup = [];
+
+  for (let uid of tutorList.getLocalUids()) {
+    cleanup.push(rre.logout(uid));
+    cleanup.push(tutorList.removeTutor(uid));
+    cleanup.push(pubsub.unsubscribe(uid));
+  }
+
+  Promise.all(cleanup).then(() => {
+    logger.info('Cleanup finished. Process ended.');
+    process.exit();
+  });
 });

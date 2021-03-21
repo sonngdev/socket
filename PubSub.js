@@ -7,11 +7,11 @@ class PubSub {
   }
 
   subscribe(uid) {
-    this.sub.subscribe(`channel_tutor_${uid}`);
+    return this.sub.subscribe(`channel_tutor_${uid}`);
   }
 
   unsubscribe(uid) {
-    this.sub.unsubscribe(`channel_tutor_${uid}`);
+    return this.sub.unsubscribe(`channel_tutor_${uid}`);
   }
 
   publish(uid, messageType, data) {
@@ -22,7 +22,7 @@ class PubSub {
   }
 
   onMessage(uid, messageType, callback) {
-    this.sub.on('message', (channelName, message) => {
+    return this.sub.on('message', (channelName, message) => {
       if (channelName !== `channel_tutor_${uid}`) {
         return;
       }
@@ -35,7 +35,7 @@ class PubSub {
   }
 
   subscribeBroadcast() {
-    this.sub.subscribe('common');
+    return this.sub.subscribe('common');
   }
 
   broadcast(messageType, data) {
@@ -46,7 +46,7 @@ class PubSub {
   }
 
   onBroadcastMessage(messageType, callback) {
-    this.sub.on('message', (channelName, message) => {
+    return this.sub.on('message', (channelName, message) => {
       if (channelName !== 'common') {
         return;
       }
