@@ -9,7 +9,7 @@ const conf = config(process.env.NODE_ENV);
 const rest = express();
 const restServer = http.createServer(rest);
 const socketServer = http.createServer();
-const socket = socketIo(socketServer, {
+const io = socketIo(socketServer, {
   cors: {
     origin: `http://localhost:${conf.rest.port}`,
     methods: ['GET', 'POST'],
@@ -80,35 +80,35 @@ rest.post('/disconnect', (req, res) => {
 | Socket app
 |--------------------------------------------------
 */
-socket.use((connection, next) => {
-  const { uid, name, avatar } = connection.request._query;
+io.use((socket, next) => {
+  const { uid, name, avatar } = socket.request._query;
   console.log(`Socket connection request from uid ${uid}, name ${name}, avatar ${avatar}`);
   next();
 });
 
-socket.on('connection', (connection) => {
-  const { uid, name, avatar } = connection.handshake.query;
+io.on('connection', (socket) => {
+  const { uid, name, avatar } = socket.handshake.query;
   tutorList.addTutor(uid, name, avatar);
 
-  connection.on('disconnect', (reason) => {
+  socket.on('disconnect', (reason) => {
     tutorList.removeTutor(uid);
   });
 
   pubsub.subscribe(uid);
 
   pubsub.onBroadcastMessage('message', (data) => {
-    socket.sockets.emit('message', data);
+    io.sockets.emit('message', data);
   });
 
   pubsub.onMessage(uid, 'message', (data) => {
-    connection.emit('message', data);
+    socket.emit('message', data);
   });
 
   pubsub.onMessage(uid, 'disconnect', (data) => {
-    if (tutorList.hasTutor(uid) && connection.emit('message', data)) {
+    if (tutorList.hasTutor(uid) && socket.emit('message', data)) {
       tutorList.removeTutor(uid);
       pubsub.unsubscribe(uid);
-      connection.disconnect(true);
+      socket.disconnect(true);
     }
   });
 });
